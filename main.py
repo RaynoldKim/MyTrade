@@ -38,10 +38,13 @@ class Main(QMainWindow):
 
 
 	def action_after_connection(self):
-		pass
+		self.kiwoom.requestKospi(self.OnReceiveKospi)
+
+	def OnReceiveKospi(self, kospiValue):
+		print('OnReceiveKospi ', kospiValue)
 
 
 if __name__ == "__main__":
 	app = QApplication(sys.argv)
 	m = Main()
-	app.exec()
+	app.exec_()
