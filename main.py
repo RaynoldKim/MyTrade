@@ -20,6 +20,10 @@ class Main(QMainWindow):
 		self.btn_login = QPushButton('Login', self)
 		self.btn_login.move(20, 20)
 		self.btn_login.clicked.connect(self.btn_login_clicked)
+		self.label_kospi = QLabel(self)
+		self.label_kospi.setMinimumWidth(200)
+		self.label_kospi.move(20, 80)
+		self.label_kospi.setText('KOSPI : -')
 
 	def setup_components(self):
 		self.kiwoom = KiWoom(QAxWidget("KHOPENAPI.KHOpenAPICtrl.1"))
@@ -40,8 +44,8 @@ class Main(QMainWindow):
 	def action_after_connection(self):
 		self.kiwoom.requestKospi(self.OnReceiveKospi)
 
-	def OnReceiveKospi(self, kospiValue):
-		print('OnReceiveKospi ', kospiValue)
+	def OnReceiveKospi(self, kospiValue, fluctuations):
+		self.label_kospi.setText('KOSPI : %s (%s)'% (kospiValue, fluctuations))
 
 
 if __name__ == "__main__":

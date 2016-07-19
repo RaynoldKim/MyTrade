@@ -1,6 +1,8 @@
+
 __all__ = ['KiWoom']
 
 from PyQt4.QtCore import *
+import time
 
 class KiWoom:
     def __init__(self, ocx):
@@ -20,13 +22,22 @@ class KiWoom:
         return ret
 
     def OnReceiveTrData(self, ScrNo, RQName, TrCode, RecordName, PrevNext, DataLength, ErrCode, Message, SplmMsg):
+        # cnt = self.GetRepeatCnt(TrCode, RQName)
+        currentValue = self.CommGetData(TrCode, "", RQName, 0, '현재가')
+        fluctuations = self.CommGetData(TrCode, "", RQName, 0, '전일대비')
         if self.callback_requestKospi != None:
-            self.callback_requestKospi(1000)
+            self.callback_requestKospi(currentValue, fluctuations)
         self.tr_event_loop.exit()
+
+    def CommGetData(self, sJongmokCode, sRealType, sFieldName, nIndex, sInnerFiledName):
+        data = self.ocx.dynamicCall("CommGetData(QString, QString, QString, int, QString)", sJongmokCode, sRealType,
+                                sFieldName, nIndex, sInnerFiledName)
+        return data.strip()
 
     def CommConnect(self, callbackConnect):
         self.callbackConnect = callbackConnect
-        self.ocx.dynamicCall('CommConnect()')
+        rt = self.ocx.dynamicCall('CommConnect()')
+        print('CommConnect', rt)
 
     def CommRqData(self, rqName, trCode, nPrevNext, sScreenNo):
         self.ocx.dynamicCall('CommRqData(QString, QString, int, QString)', rqName, trCode, nPrevNext, sScreenNo)
@@ -36,8 +47,9 @@ class KiWoom:
     def requestKospi(self, callback):
         self.callback_requestKospi = callback
 
+        self.SetInputValue('시장구분', '0')
         self.SetInputValue('업종코드', '001')
-        self.CommRqData('RQName', 'opt20001', '0', '화면번호')
+        self.CommRqData('rq_opt20001', 'opt20001', '0', '0101')
 
 
 
