@@ -13,6 +13,8 @@ class KiWoom:
 
     def OnEventConnect(self, err):
         self.callbackConnect(err);
+        self.tr_event_loop = QEventLoop()
+        self.tr_event_loop.exec_()
 
     def SetInputValue(self, sID, sValue):
         self.ocx.dynamicCall("SetInputValue(QString, QString)", sID, sValue)
@@ -23,11 +25,17 @@ class KiWoom:
 
     def OnReceiveTrData(self, ScrNo, RQName, TrCode, RecordName, PrevNext, DataLength, ErrCode, Message, SplmMsg):
         # cnt = self.GetRepeatCnt(TrCode, RQName)
-        currentValue = self.CommGetData(TrCode, "", RQName, 0, '현재가')
-        fluctuations = self.CommGetData(TrCode, "", RQName, 0, '전일대비')
-        if self.callback_requestKospi != None:
-            self.callback_requestKospi(currentValue, fluctuations)
-        self.tr_event_loop.exit()
+        if RQName == 'opt20001':
+            currentValue = self.CommGetData(TrCode, "", RQName, 0, '현재가')
+            fluctuations = self.CommGetData(TrCode, "", RQName, 0, '전일대비')
+            if self.callback_requestKospi != None:
+                self.callback_requestKospi(currentValue, fluctuations)
+        elif RQName == 'opw00013':
+            currentValue = self.CommGetData(TrCode, "", RQName, 0, '현금금액')
+            currentValue = format(int(currentValue), ',d')
+            if self.callback_requestCashBalance != None:
+                self.callback_requestCashBalance(currentValue)
+
 
     def CommGetData(self, sJongmokCode, sRealType, sFieldName, nIndex, sInnerFiledName):
         data = self.ocx.dynamicCall("CommGetData(QString, QString, QString, int, QString)", sJongmokCode, sRealType,
@@ -41,15 +49,29 @@ class KiWoom:
 
     def CommRqData(self, rqName, trCode, nPrevNext, sScreenNo):
         self.ocx.dynamicCall('CommRqData(QString, QString, int, QString)', rqName, trCode, nPrevNext, sScreenNo)
-        self.tr_event_loop = QEventLoop()
-        self.tr_event_loop.exec_()
+
+    def requestLoginInfo(self, callback):
+        self.callback_requestLoginInfo = callback
+
+        accno = self.ocx.dynamicCall('GetLoginInfo(QString)', ["ACCNO"])
+        self.accountNo = accno.rstrip(';')
+        callback(self.accountNo)
+
 
     def requestKospi(self, callback):
         self.callback_requestKospi = callback
 
         self.SetInputValue('시장구분', '0')
         self.SetInputValue('업종코드', '001')
-        self.CommRqData('rq_opt20001', 'opt20001', '0', '0101')
+        self.CommRqData('opt20001', 'opt20001', '0', '0101')
+
+    def requestCashBalance(self, callback):
+        self.callback_requestCashBalance = callback
+        self.SetInputValue('계좌번호', self.accountNo)
+        self.SetInputValue("비밀번호", "8133")
+        self.CommRqData("opw00013", "opw00013", "0", "화면번호")
+
+
 
 
 
