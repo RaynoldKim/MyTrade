@@ -50,6 +50,14 @@ class KiWoom:
     def CommRqData(self, rqName, trCode, nPrevNext, sScreenNo):
         self.ocx.dynamicCall('CommRqData(QString, QString, int, QString)', rqName, trCode, nPrevNext, sScreenNo)
 
+    def GetMasrsterCodeName(self, code):
+        return self.ocx.dynamicCall('GetMasterCodeName(QString)',[code])
+
+    def requestAllStockInfo(self, callback):
+        self.codelist = self.ocx.dynamicCall('GetCodeListByMarket(QString)',['0']).split(';')
+        self.codelist_korean = list(map(self.GetMasrsterCodeName, self.codelist))
+        callback(self.codelist_korean)
+
     def requestLoginInfo(self, callback):
         self.callback_requestLoginInfo = callback
 
