@@ -5,6 +5,7 @@ from PyQt4.QAxContainer import *
 from PyQt4.QtGui import *
 from PyQt4 import uic
 import Nasdaq
+import re
 
 form_class = uic.loadUiType('main.ui')[0]
 
@@ -21,6 +22,14 @@ class Main(QMainWindow, form_class):
 		self.label_kospi.setText('KOSPI : -')
 		self.label_nasdaq.setText('NASDAQ : -')
 		self.label_cash_balance.setText('Cash : -')
+		self.edit_all_stock_filter.textChanged.connect(self.on_edit_all_stock_filter_chagned)
+		self.list_all_stock.currentItemChanged.connect(self.on_list_all_stock_item_selection_changed)
+
+		self.label_search_stock_name.setText('종목명 : -')
+		self.label_search_stock_current.setText('현재가 : -')
+		self.label_search_stock_fluctuations.setText('등락률 : -')
+		self.label_search_stock_diffbefore.setText('전일대비 : -')
+
 		# self.setWindowTitle("myTrade")
 		# self.setGeometry(300, 300, 400, 150)
 		# self.statusbar = QStatusBar(self)
@@ -49,7 +58,7 @@ class Main(QMainWindow, form_class):
 
 
 	def btn_login_clicked(self):
-		self.kiwoom.CommConnect(self.OnEventConnect);
+		self.kiwoom.CommConnect(self.OnEventConnect)
 
 
 	def OnEventConnect(self, ErrCode):
@@ -61,13 +70,15 @@ class Main(QMainWindow, form_class):
 
 
 	def action_after_connection(self):
-		self.kiwoom.requestAllStockInfo(self.OnReceiveAllStockInfo)
+		self.kiwoom.requestAllStockName(self.OnReceiveAllStockName)
 		self.kiwoom.requestLoginInfo(self.OnReceiveLoginInfo)
 		self.kiwoom.requestKospi(self.OnReceiveKospi)
 		Nasdaq.getNasdaqValue(self.OnReceiveNasdaq)
 		self.kiwoom.requestCashBalance(self.OnReceiveCashBalance)
 
-	def OnReceiveAllStockInfo(self, info):
+	def OnReceiveAllStockName(self, info):
+		self.stock_names = info
+		self.list_all_stock.clear()
 		self.list_all_stock.addItems(info)
 		pass
 
@@ -83,7 +94,24 @@ class Main(QMainWindow, form_class):
 	def OnReceiveCashBalance(self, cash):
 		self.label_cash_balance.setText('Cash : %s' % cash)
 
+	def on_edit_all_stock_filter_chagned(self, filterString):
+		p = re.compile(filterString, re.I)
+		filteredList = list(filter(p.search, self.stock_names))
+		self.list_all_stock.clear()
+		self.list_all_stock.addItems(filteredList)
 
+	def on_list_all_stock_item_selection_changed(self, current, before):
+		if(self.isConnected() and current != None):
+			self.kiwoom.requestStockInfo(current.text(), self.OnReceiveStockInfo)
+
+	def OnReceiveStockInfo(self, infos):
+		self.label_search_stock_name.setText('종목명 : %s' % infos[1])
+		self.label_search_stock_current.setText('현재가 : %s' % abs(int(infos[2])))
+		self.label_search_stock_fluctuations.setText('등락률 : %s' % infos[3])
+		self.label_search_stock_diffbefore.setText('전일대비 : %s' % infos[4])
+
+	def isConnected(self):
+		return self.kiwoom != None and self.kiwoom.GetConnectState()
 
 if __name__ == "__main__":
 	app = QApplication(sys.argv)

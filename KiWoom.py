@@ -35,6 +35,13 @@ class KiWoom:
             currentValue = format(int(currentValue), ',d')
             if self.callback_requestCashBalance != None:
                 self.callback_requestCashBalance(currentValue)
+        elif RQName == 'opt10001':
+            code = self.CommGetData(TrCode, "", RQName, 0, '종목코드')
+            name = self.CommGetData(TrCode, "", RQName, 0, '종목명')
+            currentValue = self.CommGetData(TrCode, "", RQName, 0, '현재가')
+            fluctuations = self.CommGetData(TrCode, "", RQName, 0, '등락률')
+            diffbefore = self.CommGetData(TrCode, "", RQName, 0, '전일대비')
+            self.callback_request_stock_info((code, name, currentValue, fluctuations, diffbefore))
 
 
     def CommGetData(self, sJongmokCode, sRealType, sFieldName, nIndex, sInnerFiledName):
@@ -47,13 +54,13 @@ class KiWoom:
         rt = self.ocx.dynamicCall('CommConnect()')
         print('CommConnect', rt)
 
-    def CommRqData(self, rqName, trCode, nPrevNext, sScreenNo):
-        self.ocx.dynamicCall('CommRqData(QString, QString, int, QString)', rqName, trCode, nPrevNext, sScreenNo)
+    def CommRqData(self, trCode, nPrevNext, sScreenNo):
+        self.ocx.dynamicCall('CommRqData(QString, QString, int, QString)', trCode, trCode, nPrevNext, sScreenNo)
 
     def GetMasrsterCodeName(self, code):
         return self.ocx.dynamicCall('GetMasterCodeName(QString)',[code])
 
-    def requestAllStockInfo(self, callback):
+    def requestAllStockName(self, callback):
         self.codelist = self.ocx.dynamicCall('GetCodeListByMarket(QString)',['0']).split(';')
         self.codelist_korean = list(map(self.GetMasrsterCodeName, self.codelist))
         callback(self.codelist_korean)
@@ -71,13 +78,28 @@ class KiWoom:
 
         self.SetInputValue('시장구분', '0')
         self.SetInputValue('업종코드', '001')
-        self.CommRqData('opt20001', 'opt20001', '0', '0101')
+        self.CommRqData('opt20001', '0', '0101')
 
     def requestCashBalance(self, callback):
         self.callback_requestCashBalance = callback
         self.SetInputValue('계좌번호', self.accountNo)
         self.SetInputValue("비밀번호", "8133")
-        self.CommRqData("opw00013", "opw00013", "0", "화면번호")
+        self.CommRqData("opw00013", "0", "화면번호")
+
+    def requestStockInfo(self, stockName, callback):
+        self.callback_request_stock_info = callback
+
+        ix = self.codelist_korean.index(stockName)
+        if ix >= 0:
+            code = self.codelist[ix]
+            self.SetInputValue('종목코드', code)
+            self.CommRqData('opt10001', '0', '01011')
+        else:
+            callback(None)
+
+    def GetConnectState(self):
+        return self.ocx != None and (self.ocx.dynamicCall('GetConnectState()') == 1)
+
 
 
 
