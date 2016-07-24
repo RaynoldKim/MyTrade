@@ -24,6 +24,7 @@ class Main(QMainWindow, form_class):
 		self.label_cash_balance.setText('Cash : -')
 		self.edit_all_stock_filter.textChanged.connect(self.on_edit_all_stock_filter_chagned)
 		self.list_all_stock.currentItemChanged.connect(self.on_list_all_stock_item_selection_changed)
+		self.btn_search_stock_buy.clicked.connect(self.on_btn_search_stock_buy_clicked)
 
 		self.label_search_stock_name.setText('종목명 : -')
 		self.label_search_stock_current.setText('현재가 : -')
@@ -101,15 +102,33 @@ class Main(QMainWindow, form_class):
 		self.list_all_stock.addItems(filteredList)
 
 	def on_list_all_stock_item_selection_changed(self, current, before):
-		if(self.isConnected() and current != None):
+		if self.isConnected and current != None:
 			self.kiwoom.requestStockInfo(current.text(), self.OnReceiveStockInfo)
 
 	def OnReceiveStockInfo(self, infos):
+		self.currentSelectStock = infos
 		self.label_search_stock_name.setText('종목명 : %s' % infos[1])
 		self.label_search_stock_current.setText('현재가 : %s' % abs(int(infos[2])))
 		self.label_search_stock_fluctuations.setText('등락률 : %s' % infos[3])
 		self.label_search_stock_diffbefore.setText('전일대비 : %s' % infos[4])
 
+	def on_btn_search_stock_buy_clicked(self, check = True):
+		if check != True:
+			return
+		if self.isConnected != True:
+			QMessageBox.warning(self, '경고', '접속 상태를 확인해주세요.')
+			return
+
+		msg = QMessageBox()
+		msg.setIcon(QMessageBox.Warning)
+		msg.setWindowTitle('매수 확인!')
+		msg.setText( '%s %s'%(self.currentSelectStock[1], self.currentSelectStock[0]))
+		msg.setStandardButtons(QMessageBox.Yes | QMessageBox.No)
+		retval = msg.exec_()
+		if retval == QMessageBox.Yes:
+			self.kiwoom.requestOrder(self.currentSelectStock[0], 1)
+
+	@property
 	def isConnected(self):
 		return self.kiwoom != None and self.kiwoom.GetConnectState()
 

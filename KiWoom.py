@@ -10,6 +10,19 @@ class KiWoom:
         self.ocx.connect(self.ocx, SIGNAL('OnEventConnect(int)'), self.OnEventConnect)
         self.ocx.connect(self.ocx, SIGNAL('OnReceiveTrData(QString, QString, QString, QString, QString, int, QString, QString, QString)'),
                          self.OnReceiveTrData)
+        self.ocx.connect(self.ocx, SIGNAL("OnReceiveRealData(QString, QString, QString)"), self.OnReceiveRealData)
+        self.ocx.connect(self.ocx, SIGNAL("OnReceiveRealCondition(QString, QString, QString, QString)"),
+                         self.OnReceiveRealCondition)
+        self.ocx.connect(self.ocx, SIGNAL('OnReceiveMsg(QString , QString , QString , QString )'),
+                         self.OnReceiveMsg)
+        self.ocx.connect(self.ocx, SIGNAL('OnReceiveChejanData(QString , int , QString )'),
+                         self.OnReceiveChejanData)
+        self.ocx.connect(self.ocx, SIGNAL("OnReceiveCondition(QString, QString, QString, QString)"),
+                         self.OnReceiveCondition)
+        self.ocx.connect(self.ocx, SIGNAL("OnReceiveTrCondition(QString, QString, QString, int, int)"),
+                         self.OnReceiveTrCondition)
+        self.ocx.connect(self.ocx, SIGNAL("OnReceiveConditionVer(int, QString)"), self.OnReceiveConditionVer)
+
 
     def OnEventConnect(self, err):
         self.callbackConnect(err);
@@ -43,6 +56,26 @@ class KiWoom:
             diffbefore = self.CommGetData(TrCode, "", RQName, 0, '전일대비')
             self.callback_request_stock_info((code, name, currentValue, fluctuations, diffbefore))
 
+    def OnReceiveRealData(self, sJongmokCode, sRealType, sRealData):
+        pass
+
+    def OnReceiveRealCondition(self, strCode, strType, strConditionName, strConditionIndex):
+        pass
+
+    def OnReceiveMsg(self, sScrNo, sRQName, sTrCode, sMsg):
+        pass
+
+    def OnReceiveChejanData(self, sGubun, nItemCnt, sFidList):
+        pass
+
+    def OnReceiveCondition(self, strCode, strType, strConditionName, strConditionIndex):
+        pass
+
+    def OnReceiveConditionVer(self, lRet, sMsg):
+        pass
+
+    def OnReceiveTrCondition(self, sScrNo, strCodeList, strConditionName, nIndex, nNext):
+        pass
 
     def CommGetData(self, sJongmokCode, sRealType, sFieldName, nIndex, sInnerFiledName):
         data = self.ocx.dynamicCall("CommGetData(QString, QString, QString, int, QString)", sJongmokCode, sRealType,
@@ -59,6 +92,25 @@ class KiWoom:
 
     def GetMasrsterCodeName(self, code):
         return self.ocx.dynamicCall('GetMasterCodeName(QString)',[code])
+
+    #nOrderType - 주문유형(1:신규매수, 2:신규매도, 3:매수취소, 4:매도취소, 5:매수정정, 6:매도정정)
+    #sHogaGb –  00:지정가, 03:시장가,
+    #           05:조건부지정가, 06:최유리지정가, 07:최우선지정가,
+    #           10:지정가IOC, 13:시장가IOC, 16:최유리IOC,
+    #           20:지정가FOK, 23:시장가FOK, 26:최유리FOK,
+    #           61:장전시간외종가, 62:시간외단일가, 81:장후시간외종가
+    #※ 시장가, 최유리지정가, 최우선지정가, 시장가IOC, 최유리IOC, 시장가FOK, 최유리FOK, 장전시간외, 장후시간외
+    #※ 주문시 주문가격을 입력하지 않습니다.
+    def SendOrder(self, sRQName,  sScreenNo, sAccNo, nOrderType, sCode, nQty, nPrice, sHogaGb, sOrgOrderNo):
+        ret = self.ocx.dynamicCall('SendOrder(QString, QString, QString, int, QString, int, int, QString, QString)',
+                             [sRQName, sScreenNo, sAccNo, nOrderType, sCode, nQty, nPrice, sHogaGb, sOrgOrderNo])
+        print(self.convertErrorCode(ret))
+
+
+    def requestOrder(self, code, quantity):
+        self.SendOrder('RQ_1', 'ScreenNo', self.accountNo, 1, code, quantity, 0, '03', '');
+        pass
+
 
     def requestAllStockName(self, callback):
         self.codelist = self.ocx.dynamicCall('GetCodeListByMarket(QString)',['0']).split(';')
@@ -97,8 +149,58 @@ class KiWoom:
         else:
             callback(None)
 
+
+
     def GetConnectState(self):
         return self.ocx != None and (self.ocx.dynamicCall('GetConnectState()') == 1)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    def convertErrorCode(self, err):
+        if err ==  0:
+            desc = "정상처리";
+        elif err == -100:
+            desc = "사용자정보교환에 실패하였습니다. 잠시후 다시 시작하여 주십시오."
+        elif err == - 101:
+            desc = "서버 접속 실패"
+        elif err == -102:
+            desc = "버전처리가 실패하였습니다."
+        elif err == -200:
+            desc = '시세조회 과부하'
+        elif err == -201:
+            desc = 'REQUEST_INPUT_st Failed'
+        elif err == -202:
+            desc = '요청 전문 작성 실패'
+        elif err == -300:
+            desc = '주문 입력값 오류'
+        elif err == -301:
+            desc = '계좌비밀번호를 입력하십시오.'
+        elif err == -302:
+            desc = '타인계좌는 사용할 수 없습니다.'
+        elif err == -303:
+            desc = '주문가격이 20 억원을 초과합니다.'
+        elif err == -304:
+            desc = '주문가격은 50 억원을 초과할 수 없습니다.'
+        elif err == -305:
+            desc = '주문수량이 총발행주수의 1 % 를 초과합니다.'
+        elif err == -306:
+            desc = '주문수량은총발행주수의 3 % 를 초과할 수 없습니다.'
+        else:
+            desc = 'Unknown Error'
+        return desc
+
 
 
 
