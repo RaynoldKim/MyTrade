@@ -6,6 +6,7 @@ from PyQt4.QtGui import *
 from PyQt4 import uic
 import Nasdaq
 import re
+from Logger import Logger
 
 form_class = uic.loadUiType('main.ui')[0]
 
@@ -56,6 +57,18 @@ class Main(QMainWindow, form_class):
 
 	def setup_components(self):
 		self.kiwoom = KiWoom(QAxWidget("KHOPENAPI.KHOpenAPICtrl.1"))
+		Logger.instance().setCallback(self.onLogCollect)
+
+	def onLogCollect(self, *varl):
+		msg =''
+		index = 0
+		for i in varl:
+			if index != 0:
+				msg += ' '
+			msg += repr(i)
+			index += 1
+
+		self.list_log.addItem(msg)
 
 
 	def btn_login_clicked(self):

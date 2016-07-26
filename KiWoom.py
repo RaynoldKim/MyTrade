@@ -3,6 +3,7 @@ __all__ = ['KiWoom']
 
 from PyQt4.QtCore import *
 import time
+from Logger import Logger
 
 class KiWoom:
     def __init__(self, ocx):
@@ -63,6 +64,7 @@ class KiWoom:
         pass
 
     def OnReceiveMsg(self, sScrNo, sRQName, sTrCode, sMsg):
+        Logger.instance().log(sMsg)
         pass
 
     def OnReceiveChejanData(self, sGubun, nItemCnt, sFidList):
@@ -85,7 +87,7 @@ class KiWoom:
     def CommConnect(self, callbackConnect):
         self.callbackConnect = callbackConnect
         rt = self.ocx.dynamicCall('CommConnect()')
-        print('CommConnect', rt)
+        Logger.instance().log('CommConnect', rt)
 
     def CommRqData(self, trCode, nPrevNext, sScreenNo):
         self.ocx.dynamicCall('CommRqData(QString, QString, int, QString)', trCode, trCode, nPrevNext, sScreenNo)
@@ -104,7 +106,7 @@ class KiWoom:
     def SendOrder(self, sRQName,  sScreenNo, sAccNo, nOrderType, sCode, nQty, nPrice, sHogaGb, sOrgOrderNo):
         ret = self.ocx.dynamicCall('SendOrder(QString, QString, QString, int, QString, int, int, QString, QString)',
                              [sRQName, sScreenNo, sAccNo, nOrderType, sCode, nQty, nPrice, sHogaGb, sOrgOrderNo])
-        print(self.convertErrorCode(ret))
+        Logger.instance().log(self.convertErrorCode(ret))
 
 
     def requestOrder(self, code, quantity):
