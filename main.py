@@ -152,6 +152,7 @@ class Main(QMainWindow, form_class):
 		horHeaders = ['손익율', '수량', '현재가', '평균단가', '평가금액', '매입금액']
 
 		self.table_have_stock.setColumnCount(len(horHeaders))
+		self.table_have_stock.setRowCount(len(stocks))
 		for j, name in enumerate(stocks.keys()):
 			verHeaders.append(name)
 			values = stocks[name]
