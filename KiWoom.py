@@ -30,6 +30,7 @@ class KiWoom:
         self.tr_event_loop = QEventLoop()
         self.tr_event_loop.exec_()
 
+
     def SetInputValue(self, sID, sValue):
         self.ocx.dynamicCall("SetInputValue(QString, QString)", sID, sValue)
 
@@ -56,6 +57,16 @@ class KiWoom:
             fluctuations = self.CommGetData(TrCode, "", RQName, 0, '등락률')
             diffbefore = self.CommGetData(TrCode, "", RQName, 0, '전일대비')
             self.callback_request_stock_info((code, name, currentValue, fluctuations, diffbefore))
+        elif RQName == 'opw00004':
+            cnt = self.GetRepeatCnt(TrCode, RQName)
+            for i in range(cnt):
+                name = self.CommGetData(TrCode, "", RQName, i, '종목명')
+                cur = self.CommGetData(TrCode, "", RQName, i, '현재잔고')
+                aa = self.CommGetData(TrCode, "", RQName, i, '결재잔고')
+                Logger.instance().log(name, ' 잔고', cur, ' 결재잔고', aa)
+
+
+            pass
 
     def OnReceiveRealData(self, sJongmokCode, sRealType, sRealData):
         pass
@@ -64,7 +75,7 @@ class KiWoom:
         pass
 
     def OnReceiveMsg(self, sScrNo, sRQName, sTrCode, sMsg):
-        Logger.instance().log(sMsg)
+        Logger.instance().log(sRQName, sTrCode, sMsg)
         pass
 
     def OnReceiveChejanData(self, sGubun, nItemCnt, sFidList):
@@ -139,6 +150,9 @@ class KiWoom:
         self.SetInputValue('계좌번호', self.accountNo)
         self.SetInputValue("비밀번호", "8133")
         self.CommRqData("opw00013", "0", "화면번호")
+        self.SetInputValue('계좌번호', self.accountNo)
+        self.SetInputValue("비밀번호", "8133")
+        self.CommRqData('opw00004', "0", "화면번호")
 
     def requestStockInfo(self, stockName, callback):
         self.callback_request_stock_info = callback
