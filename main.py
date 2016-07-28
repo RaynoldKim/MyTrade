@@ -10,6 +10,27 @@ from Logger import Logger
 
 form_class = uic.loadUiType('main.ui')[0]
 
+
+# class MyTable(QTableWidget):
+#     def __init__(self, data, *args):
+#         QTableWidget.__init__(self, *args)
+#         self.data = data
+#         self.setmydata()
+#         self.resizeColumnsToContents()
+#         self.resizeRowsToContents()
+#
+#     def setmydata(self):
+#         horHeaders = []
+#         for n, key in enumerate(sorted(self.data.keys())):
+#             horHeaders.append(key)
+#             for m, item in enumerate(self.data[key]):
+#                 newitem = QTableWidgetItem(item)
+#                 self.setItem(m, n, newitem)
+#         self.setHorizontalHeaderLabels(horHeaders)
+# 		self.resizeColumnsToContents()
+# 		self.resizeRowsToContents()
+
+
 class Main(QMainWindow, form_class):
 	def __init__(self):
 		super().__init__()
@@ -31,6 +52,21 @@ class Main(QMainWindow, form_class):
 		self.label_search_stock_current.setText('현재가 : -')
 		self.label_search_stock_fluctuations.setText('등락률 : -')
 		self.label_search_stock_diffbefore.setText('전일대비 : -')
+
+		# self.table_have_stock.setRowCount(10);
+		# self.table_have_stock.setColumnCount(5);
+		# horHeaders = []
+		# self.data = {'col1': ['1', '2', '3'], 'col2': ['4', '5', '6'], 'col3': ['7', '8', '9']}
+		# for n, key in enumerate(sorted(self.data.keys())):
+		# 	horHeaders.append(key)
+		# 	for m, item in enumerate(self.data[key]):
+		# 		newitem = QTableWidgetItem(item)
+		# 		newitem.setBackgroundColor(QColor('red'))
+		# 		self.table_have_stock.setItem(m, n, newitem)
+		# self.table_have_stock.setHorizontalHeaderLabels(horHeaders)
+		# self.table_have_stock.resizeColumnsToContents()
+		# self.table_have_stock.resizeRowsToContents()
+
 
 		# self.setWindowTitle("myTrade")
 		# self.setGeometry(300, 300, 400, 150)
@@ -89,6 +125,7 @@ class Main(QMainWindow, form_class):
 		self.kiwoom.requestKospi(self.OnReceiveKospi)
 		Nasdaq.getNasdaqValue(self.OnReceiveNasdaq)
 		self.kiwoom.requestCashBalance(self.OnReceiveCashBalance)
+		self.kiwoom.requestStockBalance(self.OnReceiveStockBalance)
 
 	def OnReceiveAllStockName(self, info):
 		self.stock_names = info
@@ -107,6 +144,31 @@ class Main(QMainWindow, form_class):
 
 	def OnReceiveCashBalance(self, cash):
 		self.label_cash_balance.setText('Cash : %s' % cash)
+
+	def OnReceiveStockBalance(self, stocks):
+		self.table_have_stock.clear()
+
+		verHeaders = []
+		horHeaders = ['손익율', '수량', '현재가', '평균단가', '평가금액', '매입금액']
+
+		self.table_have_stock.setColumnCount(len(horHeaders))
+		for j, name in enumerate(stocks.keys()):
+			verHeaders.append(name)
+			values = stocks[name]
+			for i, item in enumerate(values):
+				newitem = QTableWidgetItem(item)
+				if i == 0 :
+					if float(item) > 0:
+						newitem.setBackgroundColor(QColor('green'))
+					elif float(item) < 0:
+						newitem.setBackgroundColor(QColor('red'))				
+				self.table_have_stock.setItem(j, i, newitem)
+		self.table_have_stock.setVerticalHeaderLabels(verHeaders)
+		self.table_have_stock.setHorizontalHeaderLabels(horHeaders)
+		self.table_have_stock.resizeColumnsToContents()
+		self.table_have_stock.resizeRowsToContents()
+
+		pass
 
 	def on_edit_all_stock_filter_chagned(self, filterString):
 		p = re.compile(filterString, re.I)

@@ -59,14 +59,25 @@ class KiWoom:
             self.callback_request_stock_info((code, name, currentValue, fluctuations, diffbefore))
         elif RQName == 'opw00004':
             cnt = self.GetRepeatCnt(TrCode, RQName)
+            haveStocks = {}
             for i in range(cnt):
                 name = self.CommGetData(TrCode, "", RQName, i, '종목명')
-                cur = self.CommGetData(TrCode, "", RQName, i, '현재잔고')
-                aa = self.CommGetData(TrCode, "", RQName, i, '결재잔고')
-                Logger.instance().log(name, ' 잔고', cur, ' 결재잔고', aa)
+                value_rate = format(float(self.CommGetData(TrCode, "", RQName, i, '손익율')), '.2f')
+                amount = format(int(self.CommGetData(TrCode, "", RQName, i, '보유수량')), ',d')
+                value_cur = format(int(self.CommGetData(TrCode, "", RQName, i, '현재가')), ',d')
+                value_avg = format(int(self.CommGetData(TrCode, "", RQName, i, '평균단가')), ',d')
+                value_val = format(int(self.CommGetData(TrCode, "", RQName, i, '평가금액')), ',d')
+                value_buy = format(int(self.CommGetData(TrCode, "", RQName, i, '매입금액')), ',d')
 
-
-            pass
+                haveStocks[name] = [value_rate, amount, value_cur, value_avg, value_val, value_buy]
+                Logger.instance().log(name,
+                                    ' 손익율', value_rate,
+                                    ' 보유수량', amount,
+                                    ' 현재가', value_cur,
+                                    ' 평균단가', value_avg,
+                                    ' 평가금액', value_val,
+                                    ' 매입금액', value_buy)
+            self.callback_requestStockBalance(haveStocks)
 
     def OnReceiveRealData(self, sJongmokCode, sRealType, sRealData):
         pass
@@ -150,6 +161,9 @@ class KiWoom:
         self.SetInputValue('계좌번호', self.accountNo)
         self.SetInputValue("비밀번호", "8133")
         self.CommRqData("opw00013", "0", "화면번호")
+
+    def requestStockBalance(self, callback):
+        self.callback_requestStockBalance = callback
         self.SetInputValue('계좌번호', self.accountNo)
         self.SetInputValue("비밀번호", "8133")
         self.CommRqData('opw00004', "0", "화면번호")
