@@ -43,7 +43,6 @@ class Main(QMainWindow, form_class):
 		self.actionLogin.triggered.connect(self.btn_login_clicked)
 		self.label_kospi.setText('KOSPI : -')
 		self.label_nasdaq.setText('NASDAQ : -')
-		self.label_cash_balance.setText('Cash : -')
 		self.edit_all_stock_filter.textChanged.connect(self.on_edit_all_stock_filter_chagned)
 		self.list_all_stock.currentItemChanged.connect(self.on_list_all_stock_item_selection_changed)
 		self.btn_search_stock_buy.clicked.connect(self.on_btn_search_stock_buy_clicked)
@@ -124,8 +123,7 @@ class Main(QMainWindow, form_class):
 		self.kiwoom.requestLoginInfo(self.OnReceiveLoginInfo)
 		self.kiwoom.requestKospi(self.OnReceiveKospi)
 		Nasdaq.getNasdaqValue(self.OnReceiveNasdaq)
-		self.kiwoom.requestCashBalance(self.OnReceiveCashBalance)
-		self.kiwoom.requestStockBalance(self.OnReceiveStockBalance)
+		self.kiwoom.requestCurrentAccountValue(self.OnReceiveCurrentAccountValue)
 
 	def OnReceiveAllStockName(self, info):
 		self.stock_names = info
@@ -142,20 +140,40 @@ class Main(QMainWindow, form_class):
 	def OnReceiveNasdaq(self, value, fluctuations):
 		self.label_nasdaq.setText('NASDAQ : %s (%s)' % (value, fluctuations))
 
-	def OnReceiveCashBalance(self, cash):
-		self.label_cash_balance.setText('Cash : %s' % cash)
+	def OnReceiveCurrentAccountValue(self, accountValue, accountStocks):
+		self.ShowAccountValue(accountValue)
+		self.ShowAccountStockBalance(accountStocks)
 
-	def OnReceiveStockBalance(self, stocks):
+	def ShowAccountValue(self, accountValue):
+		self.table_AccountValue.clear()
+		verHeaders = []
+		self.table_AccountValue.setColumnCount(1)
+		self.table_AccountValue.setRowCount(len(accountValue))
+		for i, name in enumerate(accountValue.keys()):
+			verHeaders.append(name)
+			values = accountValue[name]
+			if isinstance(values, int):
+				values = format(values, ',d')
+			elif isinstance(values, int):
+				values = format(values, '.2f')
+			else:
+				values = str(values)
+			newitem = QTableWidgetItem(values)
+			self.table_AccountValue.setItem(i, 0, newitem)
+		self.table_AccountValue.setVerticalHeaderLabels(verHeaders)
+		self.table_AccountValue.resizeColumnsToContents()
+		self.table_AccountValue.resizeRowsToContents()
+
+	def ShowAccountStockBalance(self, accountStocks):
 		self.table_have_stock.clear()
-
 		verHeaders = []
 		horHeaders = ['손익율', '수량', '현재가', '평균단가', '평가금액', '매입금액']
 
 		self.table_have_stock.setColumnCount(len(horHeaders))
-		self.table_have_stock.setRowCount(len(stocks))
-		for j, name in enumerate(stocks.keys()):
+		self.table_have_stock.setRowCount(len(accountStocks))
+		for j, name in enumerate(accountStocks.keys()):
 			verHeaders.append(name)
-			values = stocks[name]
+			values = accountStocks[name]
 			for i, item in enumerate(values):
 				newitem = QTableWidgetItem(item)
 				if i == 0 :
@@ -168,8 +186,6 @@ class Main(QMainWindow, form_class):
 		self.table_have_stock.setHorizontalHeaderLabels(horHeaders)
 		self.table_have_stock.resizeColumnsToContents()
 		self.table_have_stock.resizeRowsToContents()
-
-		pass
 
 	def on_edit_all_stock_filter_chagned(self, filterString):
 		p = re.compile(filterString, re.I)

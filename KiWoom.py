@@ -45,11 +45,11 @@ class KiWoom:
             fluctuations = self.CommGetData(TrCode, "", RQName, 0, '전일대비')
             if self.callback_requestKospi != None:
                 self.callback_requestKospi(currentValue, fluctuations)
-        elif RQName == 'opw00013':
-            currentValue = self.CommGetData(TrCode, "", RQName, 0, '현금금액')
-            currentValue = format(int(currentValue), ',d')
-            if self.callback_requestCashBalance != None:
-                self.callback_requestCashBalance(currentValue)
+        # elif RQName == 'opw00013':
+        #     currentValue = self.CommGetData(TrCode, "", RQName, 0, '현금금액')
+        #     currentValue = format(int(currentValue), ',d')
+        #     if self.callback_requestCashBalance != None:
+        #         self.callback_requestCashBalance(currentValue)
         elif RQName == 'opt10001':
             code = self.CommGetData(TrCode, "", RQName, 0, '종목코드')
             name = self.CommGetData(TrCode, "", RQName, 0, '종목명')
@@ -57,9 +57,43 @@ class KiWoom:
             fluctuations = self.CommGetData(TrCode, "", RQName, 0, '등락률')
             diffbefore = self.CommGetData(TrCode, "", RQName, 0, '전일대비')
             self.callback_request_stock_info((code, name, currentValue, fluctuations, diffbefore))
+
         elif RQName == 'opw00004':
+            accountValue = {}
+            accountValue['계좌명'] = self.CommGetData(TrCode, "", RQName, 0, '계좌명')
+            accountValue['지점명'] = self.CommGetData(TrCode, "", RQName, 0, '지점명')
+            accountValue['예수금'] = int(self.CommGetData(TrCode, "", RQName, 0, '예수금'))
+            accountValue['유가잔고평가액'] = int(self.CommGetData(TrCode, "", RQName, 0, '유가잔고평가액'))
+            accountValue['예탁자산평가액'] = int(self.CommGetData(TrCode, "", RQName, 0, '예탁자산평가액'))
+            accountValue['총매입금액'] = int(self.CommGetData(TrCode, "", RQName, 0, '총매입금액'))
+            accountValue['추정예탁자산'] = int(self.CommGetData(TrCode, "", RQName, 0, '추정예탁자산'))
+            accountValue['매도담보대출금'] = int(self.CommGetData(TrCode, "", RQName, 0, '매도담보대출금'))
+            accountValue['당일투자원금'] = int(self.CommGetData(TrCode, "", RQName, 0, '당일투자원금'))
+            accountValue['당월투자원금'] = int(self.CommGetData(TrCode, "", RQName, 0, '당월투자원금'))
+            accountValue['누적투자원금'] = int(self.CommGetData(TrCode, "", RQName, 0, '누적투자원금'))
+            accountValue['당일투자손익'] = int(self.CommGetData(TrCode, "", RQName, 0, '당일투자손익'))
+            accountValue['당월투자손익'] = int(self.CommGetData(TrCode, "", RQName, 0, '당월투자손익'))
+            accountValue['누적투자손익'] = int(self.CommGetData(TrCode, "", RQName, 0, '누적투자손익'))
+            x = 0
+            try:
+                x = float(self.CommGetData(TrCode, "", RQName, 0, '당일손익률'))
+            except ValueError:
+                x = 0
+            accountValue['당일손익률'] = x
+            try:
+                x = float(self.CommGetData(TrCode, "", RQName, 0, '당월손익률'))
+            except ValueError:
+                x = 0
+            accountValue['당월손익률'] = x
+            try:
+                x = float(self.CommGetData(TrCode, "", RQName, 0, '누적손익률'))
+            except ValueError:
+                x = 0
+            accountValue['누적손익률'] = x
+            Logger.instance().log(accountValue)
+
             cnt = self.GetRepeatCnt(TrCode, RQName)
-            haveStocks = {}
+            accountStocks = {}
             for i in range(cnt):
                 name = self.CommGetData(TrCode, "", RQName, i, '종목명')
                 value_rate = format(float(self.CommGetData(TrCode, "", RQName, i, '손익율')), '.2f')
@@ -69,7 +103,7 @@ class KiWoom:
                 value_val = format(int(self.CommGetData(TrCode, "", RQName, i, '평가금액')), ',d')
                 value_buy = format(int(self.CommGetData(TrCode, "", RQName, i, '매입금액')), ',d')
 
-                haveStocks[name] = [value_rate, amount, value_cur, value_avg, value_val, value_buy]
+                accountStocks[name] = [value_rate, amount, value_cur, value_avg, value_val, value_buy]
                 Logger.instance().log(name,
                                     ' 손익율', value_rate,
                                     ' 보유수량', amount,
@@ -77,29 +111,29 @@ class KiWoom:
                                     ' 평균단가', value_avg,
                                     ' 평가금액', value_val,
                                     ' 매입금액', value_buy)
-            self.callback_requestStockBalance(haveStocks)
+            self.callback_requestCurrentAccountValue(accountValue, accountStocks)
 
     def OnReceiveRealData(self, sJongmokCode, sRealType, sRealData):
-        pass
+        Logger.instance().log('OnReceiveRealData ', sJongmokCode, sRealType, sRealData)
 
     def OnReceiveRealCondition(self, strCode, strType, strConditionName, strConditionIndex):
-        pass
+        Logger.instance().log('OnReceiveRealCondition ', strCode, strType, strConditionName, strConditionIndex)
 
     def OnReceiveMsg(self, sScrNo, sRQName, sTrCode, sMsg):
-        Logger.instance().log(sRQName, sTrCode, sMsg)
+        Logger.instance().log('OnReceiveMsg ', sRQName, sTrCode, sMsg)
         pass
 
     def OnReceiveChejanData(self, sGubun, nItemCnt, sFidList):
-        pass
+        Logger.instance().log('OnReceiveChejanData ', sGubun, nItemCnt, sFidList)
 
     def OnReceiveCondition(self, strCode, strType, strConditionName, strConditionIndex):
-        pass
+        Logger.instance().log('OnReceiveCondition ', strCode, strType, strConditionName, strConditionIndex)
 
     def OnReceiveConditionVer(self, lRet, sMsg):
-        pass
+        Logger.instance().log('OnReceiveConditionVer ', lRet, sMsg)
 
     def OnReceiveTrCondition(self, sScrNo, strCodeList, strConditionName, nIndex, nNext):
-        pass
+        Logger.instance().log('OnReceiveTrCondition ', sScrNo, strCodeList, strConditionName, nIndex, nNext)
 
     def CommGetData(self, sJongmokCode, sRealType, sFieldName, nIndex, sInnerFiledName):
         data = self.ocx.dynamicCall("CommGetData(QString, QString, QString, int, QString)", sJongmokCode, sRealType,
@@ -156,14 +190,8 @@ class KiWoom:
         self.SetInputValue('업종코드', '001')
         self.CommRqData('opt20001', '0', '0101')
 
-    def requestCashBalance(self, callback):
-        self.callback_requestCashBalance = callback
-        self.SetInputValue('계좌번호', self.accountNo)
-        self.SetInputValue("비밀번호", "8133")
-        self.CommRqData("opw00013", "0", "화면번호")
-
-    def requestStockBalance(self, callback):
-        self.callback_requestStockBalance = callback
+    def requestCurrentAccountValue(self, callback):
+        self.callback_requestCurrentAccountValue = callback
         self.SetInputValue('계좌번호', self.accountNo)
         self.SetInputValue("비밀번호", "8133")
         self.CommRqData('opw00004', "0", "화면번호")
