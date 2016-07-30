@@ -7,6 +7,7 @@ from PyQt4 import uic
 import Nasdaq
 import re
 from Logger import Logger
+from LogWindow import LogWindow
 
 form_class = uic.loadUiType('main.ui')[0]
 
@@ -41,6 +42,7 @@ class Main(QMainWindow, form_class):
 	def setup_ui(self):
 		self.setupUi(self)
 		self.actionLogin.triggered.connect(self.btn_login_clicked)
+		self.actionLog.triggered.connect(self.btn_show_logwindow_clicked)
 		self.label_kospi.setText('KOSPI : -')
 		self.label_nasdaq.setText('NASDAQ : -')
 		self.edit_all_stock_filter.textChanged.connect(self.on_edit_all_stock_filter_chagned)
@@ -51,6 +53,10 @@ class Main(QMainWindow, form_class):
 		self.label_search_stock_current.setText('현재가 : -')
 		self.label_search_stock_fluctuations.setText('등락률 : -')
 		self.label_search_stock_diffbefore.setText('전일대비 : -')
+
+		self.logWindow = LogWindow(self)
+		# self.logWindow.show()
+
 
 		# self.table_have_stock.setRowCount(10);
 		# self.table_have_stock.setColumnCount(5);
@@ -103,12 +109,19 @@ class Main(QMainWindow, form_class):
 			msg += repr(i)
 			index += 1
 
-		self.list_log.addItem(msg)
+		if self.logWindow != None and self.logWindow.isEnabled():
+			self.logWindow.addLog(msg)
 
 
 	def btn_login_clicked(self):
 		self.kiwoom.CommConnect(self.OnEventConnect)
 
+	def btn_show_logwindow_clicked(self):
+		if self.logWindow != None:
+			if self.logWindow.isHidden():
+				self.logWindow.show()
+			else:
+				self.logWindow.hide()
 
 	def OnEventConnect(self, ErrCode):
 		if ErrCode == 0:
@@ -180,7 +193,7 @@ class Main(QMainWindow, form_class):
 					if float(item) > 0:
 						newitem.setBackgroundColor(QColor('green'))
 					elif float(item) < 0:
-						newitem.setBackgroundColor(QColor('red'))				
+						newitem.setBackgroundColor(QColor('red'))
 				self.table_have_stock.setItem(j, i, newitem)
 		self.table_have_stock.setVerticalHeaderLabels(verHeaders)
 		self.table_have_stock.setHorizontalHeaderLabels(horHeaders)

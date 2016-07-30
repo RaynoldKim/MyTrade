@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1024</width>
+    <width>722</width>
     <height>768</height>
    </rect>
   </property>
@@ -120,16 +120,6 @@
       <y>400</y>
       <width>241</width>
       <height>311</height>
-     </rect>
-    </property>
-   </widget>
-   <widget class="QListWidget" name="list_log">
-    <property name="geometry">
-     <rect>
-      <x>740</x>
-      <y>0</y>
-      <width>281</width>
-      <height>731</height>
      </rect>
     </property>
    </widget>
@@ -250,7 +240,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1024</width>
+     <width>722</width>
      <height>21</height>
     </rect>
    </property>
@@ -260,12 +250,30 @@
     </property>
     <addaction name="actionLogin"/>
    </widget>
+   <widget class="QMenu" name="menuWindow">
+    <property name="title">
+     <string>Window</string>
+    </property>
+    <addaction name="actionLog"/>
+   </widget>
    <addaction name="menuLogin"/>
+   <addaction name="menuWindow"/>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
   <action name="actionLogin">
    <property name="text">
     <string>Login</string>
+   </property>
+  </action>
+  <action name="actionLog">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Log</string>
    </property>
   </action>
  </widget>
