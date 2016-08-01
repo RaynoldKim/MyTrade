@@ -179,7 +179,7 @@
       </widget>
      </item>
      <item>
-      <widget class="QPushButton" name="btn_search_stock_buy_2">
+      <widget class="QPushButton" name="btn_search_stock_trade">
        <property name="text">
         <string>매수</string>
        </property>

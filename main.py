@@ -8,6 +8,7 @@ import Nasdaq
 import re
 from Logger import Logger
 from LogWindow import LogWindow
+from TradeDialog import TradeDialog
 
 form_class = uic.loadUiType('main.ui')[0]
 
@@ -48,6 +49,7 @@ class Main(QMainWindow, form_class):
 		self.edit_all_stock_filter.textChanged.connect(self.on_edit_all_stock_filter_chagned)
 		self.list_all_stock.currentItemChanged.connect(self.on_list_all_stock_item_selection_changed)
 		self.btn_search_stock_buy.clicked.connect(self.on_btn_search_stock_buy_clicked)
+		self.btn_search_stock_trade.clicked.connect(self.showTradeWindow)
 
 		self.label_search_stock_name.setText('종목명 : -')
 		self.label_search_stock_current.setText('현재가 : -')
@@ -224,14 +226,18 @@ class Main(QMainWindow, form_class):
 			QMessageBox.warning(self, '경고', '접속 상태를 확인해주세요.')
 			return
 
-		msg = QMessageBox()
-		msg.setIcon(QMessageBox.Warning)
-		msg.setWindowTitle('매수 확인!')
-		msg.setText( '%s %s'%(self.currentSelectStock[1], self.currentSelectStock[0]))
-		msg.setStandardButtons(QMessageBox.Yes | QMessageBox.No)
-		retval = msg.exec_()
-		if retval == QMessageBox.Yes:
-			self.kiwoom.requestOrder(self.currentSelectStock[0], 1)
+		TradeDialog.showTrade(self)
+		# msg = QMessageBox()
+		# msg.setIcon(QMessageBox.Warning)
+		# msg.setWindowTitle('매수 확인!')
+		# msg.setText( '%s %s'%(self.currentSelectStock[1], self.currentSelectStock[0]))
+		# msg.setStandardButtons(QMessageBox.Yes | QMessageBox.No)
+		# retval = msg.exec_()
+		# if retval == QMessageBox.Yes:
+		# 	self.kiwoom.requestOrder(self.currentSelectStock[0], 1)
+
+	def showTradeWindow(self):
+		TradeDialog.showTrade(self)
 
 	@property
 	def isConnected(self):
