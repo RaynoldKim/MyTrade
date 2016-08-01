@@ -160,13 +160,15 @@ class KiWoom:
     #※ 시장가, 최유리지정가, 최우선지정가, 시장가IOC, 최유리IOC, 시장가FOK, 최유리FOK, 장전시간외, 장후시간외
     #※ 주문시 주문가격을 입력하지 않습니다.
     def SendOrder(self, sRQName,  sScreenNo, sAccNo, nOrderType, sCode, nQty, nPrice, sHogaGb, sOrgOrderNo):
+        Logger.instance().log('SendOrder', sRQName, sScreenNo, sAccNo, nOrderType, sCode, nQty, nPrice, sHogaGb,
+                              sOrgOrderNo)
         ret = self.ocx.dynamicCall('SendOrder(QString, QString, QString, int, QString, int, int, QString, QString)',
                              [sRQName, sScreenNo, sAccNo, nOrderType, sCode, nQty, nPrice, sHogaGb, sOrgOrderNo])
         Logger.instance().log(self.convertErrorCode(ret))
 
 
-    def requestOrder(self, code, quantity):
-        self.SendOrder('RQ_1', 'ScreenNo', self.accountNo, 1, code, quantity, 0, '03', '');
+    def requestOrder(self, code, price_type, quantity, price):
+        self.SendOrder('RQ_1', 'ScreenNo', self.accountNo, 1, code, quantity, price, price_type, '');
         pass
 
 

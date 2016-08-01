@@ -214,8 +214,9 @@ class Main(QMainWindow, form_class):
 
 	def OnReceiveStockInfo(self, infos):
 		self.currentSelectStock = infos
+		self.currentSelectStockPrice = abs(int(infos[2]))
 		self.label_search_stock_name.setText('종목명 : %s' % infos[1])
-		self.label_search_stock_current.setText('현재가 : %s' % abs(int(infos[2])))
+		self.label_search_stock_current.setText('현재가 : %s' % self.currentSelectStockPrice)
 		self.label_search_stock_fluctuations.setText('등락률 : %s' % infos[3])
 		self.label_search_stock_diffbefore.setText('전일대비 : %s' % infos[4])
 
