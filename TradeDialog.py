@@ -19,6 +19,7 @@ class TradeDialog(QtGui.QDialog, form_class):
             self.combo_price_type.addItem(pricetype[0])
         self.combo_price_type.currentIndexChanged.connect(self.on_price_type_changed)
         self.combo_price_type.setCurrentIndex(1)
+        self.spin_quantity.setValue(1)
 
 
     def on_price_type_changed(self, index):
@@ -46,7 +47,12 @@ class TradeDialog(QtGui.QDialog, form_class):
     @staticmethod
     def showTrade(parent):
         dialog = TradeDialog()
+
         dialog.spin_price.setValue(parent.currentSelectStockPrice)
+        dialog.edit_code.setText(parent.currentSelectStockCode)
+        dialog.edit_name.setText(parent.currentSelectStockName)
+
+
         if dialog.exec_() == QtGui.QDialog.Accepted:
             parent.kiwoom.requestOrder(parent.currentSelectStock[0], dialog.getCurrentPriceType(),
                                        dialog.getQuantity(), dialog.getCurrentInputPrice())
