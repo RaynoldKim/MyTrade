@@ -38,6 +38,10 @@ class KiWoom:
         ret = self.ocx.dynamicCall("GetRepeatCnt(QString, QString)", sTrCode, sRecordName)
         return ret
 
+    def GetChejanData(self, nFid):
+        ret = self.ocx.dynamicCall('GetChejanData("%s")' % nFid)
+        return ret
+
     def OnReceiveTrData(self, ScrNo, RQName, TrCode, RecordName, PrevNext, DataLength, ErrCode, Message, SplmMsg):
         # cnt = self.GetRepeatCnt(TrCode, RQName)
         if RQName == 'opt20001':
@@ -125,6 +129,28 @@ class KiWoom:
 
     def OnReceiveChejanData(self, sGubun, nItemCnt, sFidList):
         Logger.instance().log('OnReceiveChejanData ', sGubun, nItemCnt, sFidList)
+        '''
+        9203	주문번호
+        302	종목명
+        900	주문수량
+        901	주문가격
+        902	미체결수량
+        904	원주문번호
+        905	주문구분
+        908	주문/체결시간
+        909	체결번호
+        910	체결가
+        911	체결량
+        10	현재가, 체결가, 실시간종가
+        '''
+        order = self.GetChejanData(9203)
+        name = self.GetChejanData(302)
+        quantity = self.GetChejanData(900)
+        price = self.GetChejanData(901)
+        remainQuantity = self.GetChejanData(902)
+        tradeQuantity = self.GetChejanData(910)
+        tradePrice = self.GetChejanData(911)
+        Logger.instance().log('OnReceiveChejanData ', order, name, quantity, price, remainQuantity, tradeQuantity, tradePrice)
 
     def OnReceiveCondition(self, strCode, strType, strConditionName, strConditionIndex):
         Logger.instance().log('OnReceiveCondition ', strCode, strType, strConditionName, strConditionIndex)
