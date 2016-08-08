@@ -193,8 +193,8 @@ class KiWoom:
         Logger.instance().log(self.convertErrorCode(ret))
 
 
-    def requestOrder(self, code, price_type, quantity, price):
-        self.SendOrder('RQ_1', 'ScreenNo', self.accountNo, 1, code, quantity, price, price_type, '');
+    def requestOrder(self, code, order_type, price_type, quantity, price):
+        self.SendOrder('RQ_1', 'ScreenNo', self.accountNo, order_type, code, quantity, price, price_type, '');
         pass
 
 

@@ -50,6 +50,7 @@ class Main(QMainWindow, form_class):
 		self.list_all_stock.currentItemChanged.connect(self.on_list_all_stock_item_selection_changed)
 		self.btn_search_stock_buy.clicked.connect(self.on_btn_search_stock_buy_clicked)
 		self.btn_search_stock_trade.clicked.connect(self.showTradeWindow)
+		self.table_have_stock.currentCellChanged .connect(self.on_table_have_stock_currentCellChagned);
 
 		self.label_search_stock_name.setText('종목명 : -')
 		self.label_search_stock_current.setText('현재가 : -')
@@ -241,6 +242,13 @@ class Main(QMainWindow, form_class):
 
 	def showTradeWindow(self):
 		TradeDialog.showTrade(self)
+
+	def on_table_have_stock_currentCellChagned(self, currentCol, b, previousCol, d):
+		stockNameitem = self.table_have_stock.verticalHeaderItem(currentCol)
+		self.on_list_all_stock_item_selection_changed(stockNameitem, None)
+		Logger.instance().log("currentCol ", currentCol, 'previousCol ', previousCol, 'item ', stockNameitem.text())
+		pass
+
 
 	@property
 	def isConnected(self):
